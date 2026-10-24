@@ -37,6 +37,8 @@
             <!-- Replace artifactId with vaadin-core to use only free components -->
             <artifactId>vaadin</artifactId>
         </dependency>
+
+
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-dev</artifactId>
@@ -68,6 +70,11 @@
             <artifactId>browserless-test-spring</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <scope>runtime</scope>
+            </dependency>
     </dependencies>
     
     <build>
