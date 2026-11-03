@@ -1,15 +1,21 @@
-
 package com.example.servicio;
 
 import com.example.entidad.producto;
+import com.example.exception.ReglaNegocioException;
 import com.example.repositorio.ProductoRepositorio;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ProductoServicio {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(ProductoServicio.class);
 
     private final ProductoRepositorio productoRepositorio;
 
@@ -17,47 +23,81 @@ public class ProductoServicio {
         this.productoRepositorio = productoRepositorio;
     }
 
-    // 1. Listar todos los productos
-    public List<producto> listarProductos() {
+    public List<producto> listars() {
         return productoRepositorio.findAll();
     }
 
-    // 2. Buscar un producto por su ID
-    public Optional<producto> buscarProducto(Integer id) {
+    public List<producto> buscarPorNombre(String texto) {
+        return productoRepositorio.findByNombreArticuloContainingIgnoreCase(texto);
+    }
+
+    public Optional<producto> buscar(Integer id) {
         return productoRepositorio.findById(id);
     }
 
-    // 3. Registrar o guardar un producto
-    public producto guardarProducto(producto producto) {
-        return productoRepositorio.save(producto);
+    public producto guardar(producto producto) {
+        validar(producto);
+        producto guardado = productoRepositorio.save(producto);
+        log.info(" creado: {}", guardado);
+        return guardado;
     }
 
-    // 4. Actualizar un producto existente
-    public producto actualizarProducto(Integer id, producto datosNuevos) {
-        producto productoExistente = productoRepositorio.findById(id)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("No existe el producto con ID: " + id));
+    public producto actualizar(Integer id, producto datosNuevos) {
+        producto existente = productoRepositorio.findById(id)
+                .orElseThrow(() -> new ReglaNegocioException(
+                        "No existe el con ID: " + id));
 
-        productoExistente.setNombreArticulo(
-                datosNuevos.getNombreArticulo());
+        validar(datosNuevos);
 
-        productoExistente.setPrecioProducto(
-                datosNuevos.getPrecioProducto());
+        existente.setNombreArticulo(datosNuevos.getNombreArticulo().trim());
+        existente.setPrecioProducto(datosNuevos.getPrecioProducto());
+        existente.setStock(datosNuevos.getStock());
+        existente.setCategoria(datosNuevos.getCategoria());
+        existente.setProveedor(datosNuevos.getProveedor());
 
-        productoExistente.setStock(
-                datosNuevos.getStock());
-
-        productoExistente.setCategoria(
-                datosNuevos.getCategoria());
-
-        productoExistente.setProveedor(
-                datosNuevos.getProveedor());
-
-        return productoRepositorio.save(productoExistente);
+        producto actualizado = productoRepositorio.save(existente);
+        log.info(" actualizado: {}", actualizado);
+        return actualizado;
     }
 
-    // 5. Eliminar un producto por su ID
-    public void eliminarProducto(Integer id) {
+    public void eliminar(Integer id) {
+        if (!productoRepositorio.existsById(id)) {
+            throw new ReglaNegocioException(
+                    "No existe el con ID: " + id);
+        }
         productoRepositorio.deleteById(id);
+        log.info(" eliminado: id={}", id);
+    }
+
+    public BigDecimal calcularValorInventario() {
+        return productoRepositorio.findAll().stream()
+                .map(p -> p.getPrecioProducto()
+                        .multiply(BigDecimal.valueOf(p.getStock())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private void validar(producto p) {
+        if (p.getNombreArticulo() == null || p.getNombreArticulo().isBlank()) {
+            log.warn("Validación fallida: nombre vacío");
+            throw new ReglaNegocioException(
+                    "El nombre del es obligatorio.");
+        }
+        if (p.getPrecioProducto() == null
+                || p.getPrecioProducto().compareTo(BigDecimal.ZERO) < 0) {
+            throw new ReglaNegocioException(
+                    "El precio debe ser mayor o igual a cero.");
+        }
+        if (p.getStock() == null || p.getStock() < 0) {
+            throw new ReglaNegocioException(
+                    "El stock debe ser mayor o igual a cero.");
+        }
+        if (p.getCategoria() == null) {
+            throw new ReglaNegocioException(
+                    "Debes seleccionar una categoría.");
+        }
+        if (p.getProveedor() == null) {
+            throw new ReglaNegocioException(
+                    "Debes seleccionar un proveedor.");
+        }
     }
 }

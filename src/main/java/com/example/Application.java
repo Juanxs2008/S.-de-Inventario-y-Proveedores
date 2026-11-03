@@ -1,5 +1,7 @@
 package com.example;
 
+import com.example.servicio.CategoriaServicio;
+import com.example.servicio.ProveedorServicio;
 import com.vaadin.flow.theme.aura.Aura;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,16 +24,35 @@ public class Application implements AppShellConfigurator {
         SpringApplication.run(Application.class, args);
     }
 
-    @Bean
-    CommandLineRunner probarConsulta(ProductoServicio productoServicio) {
-        return args -> {
-            System.out.println("=== PRODUCTOS REGISTRADOS ===");
 
-            productoServicio.listarProductos().forEach(producto ->
-                    System.out.println(producto)
-            );
+    @Bean
+    CommandLineRunner probarConsulta(
+            ProductoServicio productoServicio,
+            CategoriaServicio categoriaServicio,
+            ProveedorServicio proveedorServicio) {
+
+        return args -> {
+
+            System.out.println("=== PRODUCTOS ===");
+            productoServicio.listars()
+                    .forEach(System.out::println);
+
+            System.out.println("=== CATEGORÍAS ===");
+            categoriaServicio.listarCategorias()
+                    .forEach(categoria ->
+                            System.out.println(
+                                    categoria.getNombreCategoria()));
+
+            System.out.println("=== PROVEEDORES ===");
+            proveedorServicio.listarProveedores()
+                    .forEach(proveedor ->
+                            System.out.println(
+                                    proveedor.getNombreProveedores()));
         };
     }
+
 }
+
+
 
 
