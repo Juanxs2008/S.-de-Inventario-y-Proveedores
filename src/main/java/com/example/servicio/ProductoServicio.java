@@ -80,7 +80,7 @@ public class ProductoServicio {
         if (p.getNombreArticulo() == null || p.getNombreArticulo().isBlank()) {
             log.warn("Validación fallida: nombre vacío");
             throw new ReglaNegocioException(
-                    "El nombre del es obligatorio.");
+                    "El nombre del Articulo es obligatorio.");
         }
         if (p.getPrecioProducto() == null
                 || p.getPrecioProducto().compareTo(BigDecimal.ZERO) < 0) {
