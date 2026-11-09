@@ -16,3 +16,6 @@ COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
+RUN NODE_OPTIONS="--max-old-space-size=400" ./mvnw clean package -Pproduction -DskipTests
+
