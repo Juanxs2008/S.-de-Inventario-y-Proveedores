@@ -37,7 +37,7 @@ public class ProveedoresView extends VerticalLayout {
         tablaProveedores.addColumn(proveedor::getIdProveedor)
                 .setHeader("ID");
 
-        // Columna del nombre
+        // Columna del nombreS
         tablaProveedores.addColumn(proveedor::getNombreProveedores)
                 .setHeader("Nombre del proveedor");
 

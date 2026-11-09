@@ -29,13 +29,17 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Menu;
+import com.vaadin.flow.router.RouteAlias;
+
 
 // Java
 import java.math.BigDecimal;
 
 @Route(value = "productos", layout = com.example.base.ui.MainLayout.class)
+@RouteAlias(value = "", layout = com.example.base.ui.MainLayout.class)
 @PageTitle("Productos")
 @Menu(order = 1, title = "Productos")
+
 
 public class ProductosView extends VerticalLayout {
 
