@@ -1,5 +1,7 @@
-FROM eclipse-temurin:25-jdk AS build
+
+FROM maven:3.9.9-eclipse-temurin-25 AS build
 WORKDIR /app
+
 
 RUN apt-get update && apt-get install -y curl && \
     curl -fsSL https://nodesource.com | bash - && \
@@ -7,21 +9,26 @@ RUN apt-get update && apt-get install -y curl && \
     rm -rf /var/lib/apt/lists/*
 
 COPY pom.xml .
-COPY mvnw .
-COPY .mvn .mvn
 
-RUN chmod +x mvnw
+
+RUN mvn dependency:go-offline -B
+
 COPY src ./src
 
-RUN NODE_OPTIONS="--max-old-space-size=400" ./mvnw clean package -Pproduction -DskipTests
+RUN mvn clean package -Pproduction -DskipTests
 
-FROM eclipse-temurin:25-jre
+
+FROM eclipse-temurin:25-jre-jammy
 WORKDIR /app
 
-RUN useradd --system appuser
+
+RUN useradd --system appuser && chown -R appuser /app
 USER appuser
 
-COPY --from=build /app/target/*-SNAPSHOT.jar app.jar
+
+COPY --from=build /app/target/*.jar app.jar
+
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "-Dserver.port=${PORT:8080}", "app.jar"]
+
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-Dserver.port=${PORT:8080}", "-jar", "app.jar"]
